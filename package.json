@@ -1,10 +1,12 @@
 {
-  "name": "electron-quick-start",
+  "name": "todo",
   "version": "1.0.0",
-  "description": "A minimal Electron application",
+  "description": "TodoMVC Electron application",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "pack": "build --dir",
+    "dist": "build"
   },
   "repository": "https://github.com/electron/electron-quick-start",
   "keywords": [
@@ -17,6 +19,13 @@
   "author": "GitHub",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "^1.4.1"
+    "electron": "^1.4.1",
+    "electron-builder": "7.14.2"
+  },
+  "build": {
+    "appId": "",
+    "mac": {
+      "category": ""
+    }
   }
 }
