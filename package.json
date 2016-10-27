@@ -26,6 +26,10 @@
     "appId": "",
     "mac": {
       "category": ""
-    }
+    },
+    "protocols": [{
+      "name": "todo",
+      "schemes": ["todo", "todos"]
+    }]
   }
 }
