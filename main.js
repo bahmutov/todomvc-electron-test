@@ -1,6 +1,8 @@
 const electron = require('electron')
 // Module to control application life.
 const app = electron.app
+const protocol = electron.protocol
+
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow
 
@@ -14,7 +16,9 @@ function createWindow () {
 
   // and load the index.html of the app.
   // mainWindow.loadURL(`file://${__dirname}/index.html`)
-  mainWindow.loadURL('https://todomvc-express.gleb-demos.com/')
+  // mainWindow.loadURL('https://todomvc-express.gleb-demos.com/')
+  const base = 'http://localhost:3000/'
+  mainWindow.loadURL(base)
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
@@ -26,6 +30,54 @@ function createWindow () {
     // when you should delete the corresponding element.
     mainWindow = null
   })
+
+  // protocol.registerStringProtocol('todo', (req, cb) => {
+  //   const url = req.url
+  //   console.log('todo url %s', url)
+  //   cb('it works')
+  // }, (err) => {
+  //   if (!err) {
+  //     console.log('registered todo protocol')
+  //   } else {
+  //     console.error('could not register todo protocol')
+  //     console.error(err)
+  //   }
+  // })
+
+  protocol.registerHttpProtocol('todo', (req, cb) => {
+    const url = req.url
+    const todoPath = url.substr(7)
+    console.log('todo url %s path %s', url, todoPath)
+    // cb({
+    //   url: `${base}${todoPath}`,
+    //   method: 'GET'
+    // })
+    mainWindow.loadURL(`${base}${todoPath}`)
+  }, (err) => {
+    if (!err) {
+      console.log('registered todo protocol')
+    } else {
+      console.error('could not register todo protocol')
+      console.error(err)
+    }
+  })
+
+  // protocol.interceptHttpProtocol('todo', (req, cb) => {
+  //   const url = req.url
+  //   const todoPath = url.substr(7)
+  //   console.log('intercepted todo url %s path %s', url, todoPath)
+  //   cb({
+  //     url: `${base}${todoPath}`,
+  //     method: 'GET'
+  //   })
+  // }, (err) => {
+  //   if (!err) {
+  //     console.log('intercepted todo protocol fine')
+  //   } else {
+  //     console.error('could not intercept todo protocol')
+  //     console.error(err)
+  //   }
+  // })
 }
 
 // This method will be called when Electron has finished
