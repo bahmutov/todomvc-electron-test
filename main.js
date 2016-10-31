@@ -10,6 +10,41 @@ const BrowserWindow = electron.BrowserWindow
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
+console.log('process args', process.argv)
+
+// http://electron.atom.io/docs/api/app/#appsetasdefaultprotocolclientprotocol-path-args-macos-windows
+// app.setAsDefaultProtocolClient('todo')
+// app.setAsDefaultProtocolClient('todos')
+
+// app.removeAsDefaultProtocolClient('todo')
+// app.removeAsDefaultProtocolClient('todos')
+
+const base = 'http://localhost:3000/'
+let initialUrl = ''
+const PROTOCOL = 'todo2://'
+
+function devToolsLog(s) {
+  console.log(s)
+  if (mainWindow && mainWindow.webContents) {
+    mainWindow.webContents.executeJavaScript(`console.log("${s}")`)
+  }
+}
+
+function stripCustomProtocol(url) {
+  if (!url) {
+    return url
+  }
+  if (!url.startsWith(PROTOCOL)) {
+    return url
+  }
+  const todoPath = url.substr(8)
+  return todoPath
+}
+
+function formFullTodoUrl(todoPath) {
+  return `${base}${todoPath}`
+}
+
 function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({width: 800, height: 600})
@@ -17,11 +52,16 @@ function createWindow () {
   // and load the index.html of the app.
   // mainWindow.loadURL(`file://${__dirname}/index.html`)
   // mainWindow.loadURL('https://todomvc-express.gleb-demos.com/')
-  const base = 'http://localhost:3000/'
-  mainWindow.loadURL(base)
 
-  // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
+
+  devToolsLog('process args ' + process.argv.join(','))
+  devToolsLog('initial url? ' + initialUrl)
+  const openUrl = initialUrl || process.argv[1]
+  const firstUrl = openUrl ? formFullTodoUrl(openUrl) : base
+  devToolsLog('opening ' + firstUrl)
+
+  mainWindow.loadURL(firstUrl)
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
@@ -46,13 +86,17 @@ function createWindow () {
 
   protocol.registerHttpProtocol('todo', (req, cb) => {
     const url = req.url
-    const todoPath = url.substr(7)
-    console.log('todo url %s path %s', url, todoPath)
+    const todoPath = stripCustomProtocol(url)
+    const msg = `todo url ${url} path ${todoPath}`
+    devToolsLog(msg)
+
     // cb({
     //   url: `${base}${todoPath}`,
     //   method: 'GET'
     // })
-    mainWindow.loadURL(`${base}${todoPath}`)
+    const fullUrl = formFullTodoUrl(todoPath)
+    devToolsLog('full url to open ' + fullUrl)
+    mainWindow.loadURL(fullUrl)
   }, (err) => {
     if (!err) {
       console.log('registered todo protocol')
@@ -91,6 +135,22 @@ app.on('window-all-closed', function () {
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== 'darwin') {
     app.quit()
+  }
+})
+
+app.on('open-url', function (e, url) {
+  console.log('open-url', url)
+  if (url.startsWith('/')) {
+    url = url.substr(1)
+  }
+  initialUrl = stripCustomProtocol(url)
+  devToolsLog('setting initial url to ' + initialUrl)
+  // e.preventDefault()
+  if (mainWindow) {
+    // we are already running!
+    const fullUrl = formFullTodoUrl(initialUrl)
+    devToolsLog('full url to open ' + fullUrl)
+    mainWindow.loadURL(fullUrl)
   }
 })
 

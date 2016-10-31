@@ -1,6 +1,6 @@
 {
   "name": "todo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "TodoMVC Electron application",
   "main": "main.js",
   "scripts": {
@@ -28,8 +28,9 @@
       "category": ""
     },
     "protocols": [{
-      "name": "todo",
-      "schemes": ["todo", "todos"]
+      "name": "todo2",
+      "role": "Viewer",
+      "schemes": ["todo2", "todos2"]
     }]
   }
 }
