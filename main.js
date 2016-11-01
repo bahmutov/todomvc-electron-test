@@ -43,7 +43,7 @@ function formFullTodoUrl(todoPath) {
 }
 
 function createWindow () {
-  mainWindow = new BrowserWindow({width: 800, height: 1000})
+  mainWindow = new BrowserWindow({width: 1000, height: 800})
   // just for demo purposes
   mainWindow.webContents.openDevTools()
 
