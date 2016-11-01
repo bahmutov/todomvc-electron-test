@@ -12,17 +12,14 @@ let mainWindow
 
 console.log('process args', process.argv)
 
-// http://electron.atom.io/docs/api/app/#appsetasdefaultprotocolclientprotocol-path-args-macos-windows
-// app.setAsDefaultProtocolClient('todo')
-// app.setAsDefaultProtocolClient('todos')
-
-// app.removeAsDefaultProtocolClient('todo')
-// app.removeAsDefaultProtocolClient('todos')
-
+// TODO pass the base url in the environment variable during setup?
 const base = 'http://localhost:3000/'
 let initialUrl = ''
+// This application opens links that start with this protocol
 const PROTOCOL = 'todo2://'
+const PROTOCOL_PREFIX = PROTOCOL.split(':')[0]
 
+// prints given message both in the terminal console and in the DevTools
 function devToolsLog(s) {
   console.log(s)
   if (mainWindow && mainWindow.webContents) {
@@ -46,17 +43,15 @@ function formFullTodoUrl(todoPath) {
 }
 
 function createWindow () {
-  // Create the browser window.
-  mainWindow = new BrowserWindow({width: 800, height: 600})
-
-  // and load the index.html of the app.
-  // mainWindow.loadURL(`file://${__dirname}/index.html`)
-  // mainWindow.loadURL('https://todomvc-express.gleb-demos.com/')
-
+  mainWindow = new BrowserWindow({width: 800, height: 1000})
+  // just for demo purposes
   mainWindow.webContents.openDevTools()
 
   devToolsLog('process args ' + process.argv.join(','))
   devToolsLog('initial url? ' + initialUrl)
+  // on Windows, new app is created every time someone tries to open
+  // custom protocol link. On Mac OS X, we have single application instance
+  // and the custom protocol link is passed via "open-url" event (see below)
   const openUrl = initialUrl || process.argv[1]
   const firstUrl = openUrl ? formFullTodoUrl(openUrl) : base
   devToolsLog('opening ' + firstUrl)
@@ -71,29 +66,16 @@ function createWindow () {
     mainWindow = null
   })
 
-  // protocol.registerStringProtocol('todo', (req, cb) => {
-  //   const url = req.url
-  //   console.log('todo url %s', url)
-  //   cb('it works')
-  // }, (err) => {
-  //   if (!err) {
-  //     console.log('registered todo protocol')
-  //   } else {
-  //     console.error('could not register todo protocol')
-  //     console.error(err)
-  //   }
-  // })
-
-  protocol.registerHttpProtocol('todo', (req, cb) => {
+  protocol.registerHttpProtocol(PROTOCOL_PREFIX, (req, cb) => {
     const url = req.url
     const todoPath = stripCustomProtocol(url)
     const msg = `todo url ${url} path ${todoPath}`
     devToolsLog(msg)
 
-    // cb({
-    //   url: `${base}${todoPath}`,
-    //   method: 'GET'
-    // })
+    // instead of returning something to load, just load
+    // the full url ourselves
+    // if we return HTTP url instead, the browser will not know how
+    // to resolve relative links, since it will still be using PROTOCOL://link
     const fullUrl = formFullTodoUrl(todoPath)
     devToolsLog('full url to open ' + fullUrl)
     mainWindow.loadURL(fullUrl)
@@ -105,23 +87,6 @@ function createWindow () {
       console.error(err)
     }
   })
-
-  // protocol.interceptHttpProtocol('todo', (req, cb) => {
-  //   const url = req.url
-  //   const todoPath = url.substr(7)
-  //   console.log('intercepted todo url %s path %s', url, todoPath)
-  //   cb({
-  //     url: `${base}${todoPath}`,
-  //     method: 'GET'
-  //   })
-  // }, (err) => {
-  //   if (!err) {
-  //     console.log('intercepted todo protocol fine')
-  //   } else {
-  //     console.error('could not intercept todo protocol')
-  //     console.error(err)
-  //   }
-  // })
 }
 
 // This method will be called when Electron has finished
@@ -138,14 +103,17 @@ app.on('window-all-closed', function () {
   }
 })
 
+// Mac OS X sends url to open via this event
 app.on('open-url', function (e, url) {
   console.log('open-url', url)
   if (url.startsWith('/')) {
     url = url.substr(1)
   }
+
+  // if the main window has not been created yet
   initialUrl = stripCustomProtocol(url)
   devToolsLog('setting initial url to ' + initialUrl)
-  // e.preventDefault()
+
   if (mainWindow) {
     // we are already running!
     const fullUrl = formFullTodoUrl(initialUrl)
