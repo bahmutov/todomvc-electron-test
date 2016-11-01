@@ -6,7 +6,8 @@
   "scripts": {
     "start": "electron .",
     "pack": "build --dir",
-    "dist": "build"
+    "dist": "build",
+    "win": "build --win"
   },
   "repository": "https://github.com/electron/electron-quick-start",
   "keywords": [
@@ -31,6 +32,12 @@
       "name": "todo2",
       "role": "Viewer",
       "schemes": ["todo2", "todos2"]
-    }]
+    }],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "perMachine": true
+    }
   }
 }
