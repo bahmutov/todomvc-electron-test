@@ -5,7 +5,8 @@ project with added custom protocol support.
 
 ![TodoMVC Electron](images/todomvc-electron.png)
 
-Handles internal custom protocol links
+Handles internal custom protocol links `todo2://<something>` by redirecting them
+to `https://todomvc-express.bahmutov.com/<something>`.
 
 ![Internal custom](images/custom-internal.png)
 
