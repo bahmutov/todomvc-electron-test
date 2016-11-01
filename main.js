@@ -13,7 +13,7 @@ let mainWindow
 console.log('process args', process.argv)
 
 // TODO pass the base url in the environment variable during setup?
-const base = 'http://localhost:3000/'
+const base = 'https://todomvc-express.bahmutov.com/'
 let initialUrl = ''
 // This application opens links that start with this protocol
 const PROTOCOL = 'todo2://'
